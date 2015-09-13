@@ -1,0 +1,11 @@
+#/!bin/bash
+
+id=`docker ps | grep registry | cut -d ' ' -f 1`
+
+if [ -z "$id" ];
+	then
+	>&2 echo Did not find a running registry
+	exit 1
+fi
+
+echo $id

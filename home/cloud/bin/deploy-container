@@ -1,0 +1,27 @@
+#!/bin/sh
+app="$1"
+node="$2"
+
+print_usage (){
+	echo deploy-container app nodeid
+}
+
+	
+if [ -z "$node" ];
+	then
+	echo Missing node ID
+	print_usage
+	exit 1
+fi
+
+if [ -z "$app" ];
+        then
+        echo Missing app
+        print_usage
+        exit 1
+fi
+
+ssh -T cloud@$node bash -c "'
+docker run matrix-manager.matrix:5000/$app
+'"
+

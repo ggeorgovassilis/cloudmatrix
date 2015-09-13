@@ -1,0 +1,13 @@
+#!/bin/sh
+
+appname=$1
+
+if [ -z "$appname" ];
+	then
+	>&2 echo Missing appname
+	exit 1
+fi
+
+docker tag cloud/$appname matrix-manager.matrix:5000/cloud/$appname
+docker push matrix-manager.matrix:5000/cloud/$appname
+

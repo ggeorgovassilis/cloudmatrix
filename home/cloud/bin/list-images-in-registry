@@ -1,0 +1,4 @@
+#!/bin/bash
+registry_container_id=`registry-container-id`
+
+docker exec -i $registry_container_id /bin/bash -c '/bin/ls /var/lib/registry/docker/registry/v2/repositories/'

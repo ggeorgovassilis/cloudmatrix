@@ -1,0 +1,7 @@
+#!/bin/sh
+
+sudo varnishadm -T localhost:6082 -S /etc/varnish/secret << EOF
+vcl.load reload01 /etc/varnish/default.vcl
+vcl.use reload01
+
+EOF

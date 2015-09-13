@@ -1,0 +1,20 @@
+#!/bin/sh
+host=$1
+
+print_usage (){
+	echo remove-container nodeid id1 id2 ...
+}
+
+	
+if [ -z "$host" ];
+	then
+	echo Missing node ID
+	print_usage
+	exit 1
+fi
+
+shift
+args=$@
+ssh -T cloud@$host bash -c "'
+docker rm $args
+'"

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+appname=$1
+apppath=$2
+
+if [ -z "$appname" ];
+	then
+	>&2 echo Missing appname
+	exit 1
+fi
+
+if [ -z "$apppath" ];
+	then
+	>&2 echo Missing app path
+	exit 2
+fi
+
+if [ ! -d "$apppath" ]; then
+	echo $apppath does not exist
+fi
+
+cd "$apppath"
+docker build --rm -t "cloud/$appname" .
+

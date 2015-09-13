@@ -1,0 +1,20 @@
+#!/bin/sh
+host=$1
+application=$2
+port=$3
+
+print_usage (){
+	echo run-container nodeid application port
+}
+
+	
+if [ -z "$host" ] || [ -z "$application" ] || [ -z "$port" ]
+	then
+	print_usage
+	exit 1
+fi
+
+ssh -T cloud@$host bash -c "'
+docker run -d -p $port:8080 matrix-manager.matrix:5000/cloud/$application
+'"
+

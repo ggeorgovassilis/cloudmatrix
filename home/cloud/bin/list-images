@@ -1,0 +1,22 @@
+#!/bin/sh
+
+node=$1
+
+list_local_images (){
+	docker images
+}
+
+list_node_images (){
+	node=$1
+	ssh -T cloud@$node '/bin/bash' <<'ENDSSH'
+docker images
+ENDSSH
+
+}
+
+if [ -z "$node" ]; then
+	list_local_images
+else
+	list_node_images $node
+fi
+
