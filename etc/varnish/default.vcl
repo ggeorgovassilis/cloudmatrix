@@ -4,13 +4,13 @@
 # Default backend definition.  Set this to point to your content
 # server.
 # 
-backend node108_simplewebapp {
-	.host = "node108";
+backend node107_simplewebapp {
+	.host = "node107";
 	.port = "5050";
 }
 
-backend node107_simplewebapp2 {
-	.host = "node107";
+backend node108_simplewebapp2 {
+	.host = "node108";
 	.port = "5050";
 }
 
@@ -21,9 +21,9 @@ backend localhost {
 
 sub vcl_recv {
 	if (req.url ~ "^/simplewebapp/") {
-		set req.backend = node108_simplewebapp;
+		set req.backend = node107_simplewebapp;
 	} else if (req.url ~ "^/simplewebapp2/") {
-		set req.backend = node107_simplewebapp2;
+		set req.backend = node108_simplewebapp2;
 	} else
 	{
 		set req.backend = localhost; 
