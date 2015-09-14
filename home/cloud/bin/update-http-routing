@@ -1,0 +1,107 @@
+#!/bin/bash
+# Configuration and utility functions
+
+# The deployment plan file consists of applications deployed to nodes. Each line looks like this:
+# appname	nodeid	external_port	internal_port
+
+plan=/home/cloud/applications.plan
+readarray entries < <(cat $plan | grep -v "^#")
+
+# We'll need a list of apps, so read the deployment plan again just for this purpose
+readarray apps < <(cat $plan | grep -v "^#" | cut -f 1 | uniq | sort)
+now=`date`
+
+
+# Trim arguments and echo the result
+trim() {
+    local var="$*"
+    var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
+    var="${var%"${var##*[![:space:]]}"}"   # remove trailing whitespace characters
+    echo -n "$var"
+}
+
+# Count the number of nodes on which the app ($1) is installed. Accesses the global "entries" variable. Echoes the result.
+function count_nodes_for_app(){
+	local app=$1
+
+	local count=0
+	for entry in "${entries[@]}"
+	do
+		local arr=($entry)
+		local node_app=$(trim ${arr[0]})
+		if [ "$node_app" == "$app" ]
+		then
+			((count++))
+		fi
+	done
+	echo -n $count
+}
+
+# Print the backend declaration section
+declare_backends (){
+echo \#\#\# Declare backends
+for entry in "${entries[@]}"
+do
+        arr=($entry)
+        app=${arr[0]}
+        node=${arr[1]}
+        ext_port=${arr[2]}
+        int_port=${arr[3]}
+
+        echo backend $app\_$node {
+        echo .host = \"$node\"\;
+        echo .port = \"$ext_port\"\;
+        echo }
+        echo 
+done
+
+echo sub vcl_init {
+for app in "${apps[@]}"
+do
+        d="director_$app"; 
+        echo new $d = directors.round_robin\(\)\;
+done
+
+# Just running over entries would produce duplicate instructions. We need the "processed_backends" variable to remember which declarations we already printed.
+processed_backends=""
+
+for entry in "${entries[@]}"
+do
+        arr=($entry)
+        app=${arr[0]}
+        node=${arr[1]}
+	backend=$app\_$node;
+	if [[ $processed_backends != *"$backend"* ]]
+	then
+        	echo director_$app.add_backend\($backend\)\;
+		processed_backends="$processed_backends,$backend"
+	fi
+done
+echo }
+
+}
+
+# Print mapping declarations from URLs to backends
+map_requests_to_backends (){
+echo  
+echo sub vcl_recv{
+for app in "${apps[@]}"
+do
+        app=$(trim $app)
+        node_count=$(count_nodes_for_app $app "${entries[@]}")
+        echo if \(req.url \~ \"^/$app/\"\) { 
+	echo	set req.backend_hint = director_$app.backend\(\)\;                        
+        echo }
+done
+echo }
+}
+
+echo \# varnish configuration created $now
+echo vcl 4.0\;
+echo import std\;
+echo import directors\;
+echo  
+
+declare_backends
+map_requests_to_backends
+

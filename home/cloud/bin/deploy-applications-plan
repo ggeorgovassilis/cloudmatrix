@@ -1,0 +1,33 @@
+#!/bin/bash
+# Configuration
+plan=/home/cloud/applications.plan
+
+# Clean up nodes
+echo === Terminating containers on all nodes ===
+readarray nodes < <(list-nodes | cut -d ' ' -f 4 | sort)
+for node in "${nodes[@]}"
+do
+	echo === Terminating containers on $node
+
+	ssh -T cloud@$node '/bin/bash' << 'EOF'
+	docker stop $(docker ps -a -q)
+	docker rm $(docker ps -a -q)
+EOF
+
+done
+
+echo === Executing deployment plan ===
+readarray entries < <(cat $plan | grep -v "^#")
+
+
+for entry in "${entries[@]}"
+do
+	arr=($entry// / })
+	app=${arr[0]}
+	node=${arr[1]}
+	ext_port=${arr[2]}
+	int_port=${arr[3]}
+	echo === Deploying $app:$int_port to $node:$ext_port
+	run-container $node $app $ext_port
+done
+echo === Finished deployment plan ===
