@@ -4,14 +4,27 @@
 # Default backend definition.  Set this to point to your content
 # server.
 # 
-backend node107_simplewebapp {
+
+import std;
+
+backend node107_simplewebapp1 {
 	.host = "node107";
+	.port = "5050";
+}
+
+backend node107_simplewebapp2 {
+	.host = "node107";
+	.port = "6060";
+}
+
+backend node108_simplewebapp1 {
+	.host = "node108";
 	.port = "5050";
 }
 
 backend node108_simplewebapp2 {
 	.host = "node108";
-	.port = "5050";
+	.port = "6060";
 }
 
 backend localhost {
@@ -20,10 +33,22 @@ backend localhost {
 }
 
 sub vcl_recv {
-	if (req.url ~ "^/simplewebapp/") {
-		set req.backend = node107_simplewebapp;
+	if (req.url ~ "^/simplewebapp1/") {
+		if (std.random(1,100)<50){
+			set req.backend = node107_simplewebapp1;
+			set req.http.x-backend = "node107";
+		} else {
+			set req.backend = node108_simplewebapp1;
+			set req.http.x-backend = "node108";
+		}
 	} else if (req.url ~ "^/simplewebapp2/") {
-		set req.backend = node108_simplewebapp2;
+		if (std.random(1,100)<50){
+			set req.backend = node107_simplewebapp2;
+			set req.http.x-backend = "node107";
+		} else {
+			set req.backend = node108_simplewebapp2;
+			set req.http.x-backend = "node108";
+		}
 	} else
 	{
 		set req.backend = localhost; 
@@ -96,23 +121,25 @@ sub vcl_recv {
 # sub vcl_miss {
 #     return (fetch);
 # }
-# 
-# sub vcl_fetch {
-#     if (beresp.ttl <= 0s ||
-#         beresp.http.Set-Cookie ||
-#         beresp.http.Vary == "*") {
-# 		/*
-# 		 * Mark as "Hit-For-Pass" for the next 2 minutes
-# 		 */
+
+#sub vcl_fetch {
+#    if (beresp.ttl <= 0s ||
+#        beresp.http.Set-Cookie ||
+#        beresp.http.Vary == "*") {
+#		/*
+#		  * Mark as "Hit-For-Pass" for the next 2 minutes
+#		 */
 # 		set beresp.ttl = 120 s;
 # 		return (hit_for_pass);
 #     }
+#     set resp.http.x-backend = req.http.x-backend;
 #     return (deliver);
-# }
-# 
-# sub vcl_deliver {
-#     return (deliver);
-# }
+#}
+
+ sub vcl_deliver {
+      set resp.http.x-backend = req.http.x-backend;
+     return (deliver);
+ }
 # 
 # sub vcl_error {
 #     set obj.http.Content-Type = "text/html; charset=utf-8";

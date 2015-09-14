@@ -14,5 +14,5 @@ if [ -z "$host" ];
 fi
 
 ssh -T cloud@$host '/bin/bash' <<'ENDSSH'
-docker ps -a
+docker ps
 ENDSSH

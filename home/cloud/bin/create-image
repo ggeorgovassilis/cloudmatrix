@@ -20,5 +20,6 @@ if [ ! -d "$apppath" ]; then
 fi
 
 cd "$apppath"
-docker build --rm -t "cloud/$appname" .
+#docker build --rm -t "cloud/$appname" .
+docker build --rm -t "matrix-manager.matrix:5000/cloud/$appname" .
 
