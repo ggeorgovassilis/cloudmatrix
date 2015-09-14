@@ -20,7 +20,6 @@ MEMLOCK=82000
 
 # Default varnish instance name is the local nodename.  Can be overridden with
 # the -n switch, to have more instances on a single server.
-# You may need to uncomment this variable for alternatives 1 and 3 below.
 # INSTANCE=$(uname -n)
 
 # This file contains 4 alternatives, please use only one.
@@ -30,20 +29,19 @@ MEMLOCK=82000
 # Listen on port 6081, administration on localhost:6082, and forward to
 # content server on localhost:8080.  Use a 1GB fixed-size cache file.
 #
-# This example uses the INSTANCE variable above, which you need to uncomment.
-#
 # DAEMON_OPTS="-a :6081 \
 #              -T localhost:6082 \
-# 	     -b localhost:8080 \
-# 	     -u varnish -g varnish \
-#            -S /etc/varnish/secret \
-# 	     -s file,/var/lib/varnish/$INSTANCE/varnish_storage.bin,1G"
+#              -b localhost:8080 \
+#              -u varnish -g varnish \
+#              -S /etc/varnish/secret \
+#              -s file,/var/lib/varnish/$INSTANCE/varnish_storage.bin,1G"
 
 
 ## Alternative 2, Configuration with VCL
 #
 # Listen on port 6081, administration on localhost:6082, and forward to
 # one content server selected by the vcl file, based on the request.
+# Use a 256MB memory based cache.
 #
 DAEMON_OPTS="-a :6081 \
              -T localhost:6082 \
@@ -53,8 +51,6 @@ DAEMON_OPTS="-a :6081 \
 
 
 ## Alternative 3, Advanced configuration
-#
-# This example uses the INSTANCE variable above, which you need to uncomment.
 #
 # See varnishd(1) for more information.
 #
@@ -89,7 +85,7 @@ DAEMON_OPTS="-a :6081 \
 #
 # # File containing administration secret
 # VARNISH_SECRET_FILE=/etc/varnish/secret
-# 
+#
 # # Backend storage specification
 # VARNISH_STORAGE="file,${VARNISH_STORAGE_FILE},${VARNISH_STORAGE_SIZE}"
 #
@@ -102,8 +98,10 @@ DAEMON_OPTS="-a :6081 \
 #              -f ${VARNISH_VCL_CONF} \
 #              -T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
 #              -t ${VARNISH_TTL} \
-#              -w ${VARNISH_MIN_THREADS},${VARNISH_MAX_THREADS},${VARNISH_THREAD_TIMEOUT} \
-# 	       -S ${VARNISH_SECRET_FILE} \
+#              -p thread_pool_min=${VARNISH_MIN_THREADS} \
+#              -p thread_pool_max=${VARNISH_MAX_THREADS} \
+#              -p thread_pool_timeout=${VARNISH_THREAD_TIMEOUT} \
+#              -S ${VARNISH_SECRET_FILE} \
 #              -s ${VARNISH_STORAGE}"
 #
 

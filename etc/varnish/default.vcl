@@ -4,8 +4,10 @@
 # Default backend definition.  Set this to point to your content
 # server.
 # 
+vcl 4.0;
 
 import std;
+import directors;
 
 backend node107_simplewebapp1 {
 	.host = "node107";
@@ -27,31 +29,21 @@ backend node108_simplewebapp2 {
 	.port = "6060";
 }
 
-backend localhost {
-	.host = "localhost";
-	.port = "8080";
+sub vcl_init {
+	new director_simplewebapp1 = directors.round_robin();
+	director_simplewebapp1.add_backend(node107_simplewebapp1);
+	director_simplewebapp1.add_backend(node108_simplewebapp1);
+
+	new director_simplewebapp2 = directors.round_robin();
+	director_simplewebapp2.add_backend(node107_simplewebapp2);
+	director_simplewebapp2.add_backend(node108_simplewebapp2);
 }
 
 sub vcl_recv {
 	if (req.url ~ "^/simplewebapp1/") {
-		if (std.random(1,100)<50){
-			set req.backend = node107_simplewebapp1;
-			set req.http.x-backend = "node107";
-		} else {
-			set req.backend = node108_simplewebapp1;
-			set req.http.x-backend = "node108";
-		}
+		set req.backend_hint = director_simplewebapp1.backend();
 	} else if (req.url ~ "^/simplewebapp2/") {
-		if (std.random(1,100)<50){
-			set req.backend = node107_simplewebapp2;
-			set req.http.x-backend = "node107";
-		} else {
-			set req.backend = node108_simplewebapp2;
-			set req.http.x-backend = "node108";
-		}
-	} else
-	{
-		set req.backend = localhost; 
+		set req.backend_hint = director_simplewebapp2.backend();
 	}
 }
 
