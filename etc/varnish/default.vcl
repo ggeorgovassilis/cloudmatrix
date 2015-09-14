@@ -1,4 +1,4 @@
-# varnish configuration created Mon Sep 14 13:02:05 EEST 2015
+# varnish configuration created Mon Sep 14 21:53:51 EEST 2015
 vcl 4.0;
 import std;
 import directors;
