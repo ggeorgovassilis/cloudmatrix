@@ -17,3 +17,4 @@ cp /etc/default/docker $base/etc/default
 cp /etc/default/varnish $base/etc/default
 cp /etc/network/interfaces $base/etc/network
 cp /etc/varnish/default.vcl $base/etc/varnish
+cp /home/cloud/applications.plan $base/home/cloud
