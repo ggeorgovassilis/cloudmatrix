@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Step 1: get a list of all nodes
+nodes=`list-nodes | cut -d ' ' -f 4`
+readarray nodes < <(echo "$nodes")
+for node in "${nodes[@]}"
+do
+	node-stats $node
+done
