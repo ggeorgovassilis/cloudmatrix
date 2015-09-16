@@ -1,5 +1,5 @@
 #app name	node		ext. port	int. port
-simplewebapp1	node107		5050		8080
+simplewebapp1	node25		5050		8080
 simplewebapp1	node108 	5050		8080
-simplewebapp2	node107 	6060		8080
+simplewebapp2	node25	 	6060		8080
 simplewebapp2	node108 	6060		8080

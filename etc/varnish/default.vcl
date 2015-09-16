@@ -1,11 +1,11 @@
-# varnish configuration created Mon Sep 14 21:53:51 EEST 2015
+# varnish configuration created Tue Sep 15 10:12:22 EEST 2015
 vcl 4.0;
 import std;
 import directors;
 
 ### Declare backends
-backend simplewebapp1_node107 {
-.host = "node107";
+backend simplewebapp1_node25 {
+.host = "node25";
 .port = "5050";
 }
 
@@ -14,8 +14,8 @@ backend simplewebapp1_node108 {
 .port = "5050";
 }
 
-backend simplewebapp2_node107 {
-.host = "node107";
+backend simplewebapp2_node25 {
+.host = "node25";
 .port = "6060";
 }
 
@@ -27,9 +27,9 @@ backend simplewebapp2_node108 {
 sub vcl_init {
 new director_simplewebapp1 = directors.round_robin();
 new director_simplewebapp2 = directors.round_robin();
-director_simplewebapp1.add_backend(simplewebapp1_node107);
+director_simplewebapp1.add_backend(simplewebapp1_node25);
 director_simplewebapp1.add_backend(simplewebapp1_node108);
-director_simplewebapp2.add_backend(simplewebapp2_node107);
+director_simplewebapp2.add_backend(simplewebapp2_node25);
 director_simplewebapp2.add_backend(simplewebapp2_node108);
 }
 

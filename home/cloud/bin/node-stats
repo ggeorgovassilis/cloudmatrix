@@ -1,0 +1,70 @@
+#!/bin/bash
+host=$1
+
+print_usage (){
+	echo node-stats nodeid
+}
+
+	
+if [ -z "$host" ];
+	then
+	echo Missing node ID
+	print_usage
+	exit 1
+fi
+
+# Step 1: get container IDs running on the node. This is necessary because step 2 needs those ids for docker stats.
+
+readarray containerids < <(list-container-ids $host)
+containerids=`echo ${containerids[@]}`
+
+# Step 2: execute batch which returns docker stats, proccess names, memory stats and filesystem stats
+out=`ssh -T cloud@$host "echo ---PROCS;docker ps;echo ---DOCKER;docker stats --no-stream=true $containerids;echo ---MEM;free -h;echo ---DISKSTATS;cat /proc/diskstats;echo ---EOF"`
+
+# Step 3: split the batch in docker processes (we need that to translate container IDs to image names), docker stats, memory stats and disk stats
+procs_out=`echo "$out" | sed -n "/---PROCS/,/---DOCKER/p" | head -n-1 | tail -n+2`
+docker_out=`echo "$out" | sed -n "/---DOCKER/,/---MEM/p" | head -n-1 | tail -n+2`
+mem_out=`echo "$out" | sed -n "/---MEM/,/---DISKSTATS/p" | head -n-1 | tail -n+2`
+disk_out=`echo "$out" | sed -n "/---DISKSTATS/,/---EOF/p" | head -n-1 | tail -n+2`
+
+# Step 4: show meaningful memory stats
+
+echo ---------------------------------
+echo Memory on $host 
+echo ---------------------------------
+echo "$mem_out"
+echo 
+
+# Step 5: show meaningful disk stats 
+echo ---------------------------------
+echo Filesystem on $host 
+echo ---------------------------------
+
+readarray fslines < <(echo "$disk_out" | grep sd)
+printf "%20s%20s%20s\n" "Filesystem" "read IOs" "write IOs"
+for fsline in "${fslines[@]}"
+do
+	fields=($fsline// / })
+	fs=${fields[2]}
+	rios=${fields[3]}
+	wios=${fields[4]}
+	printf "%20s%20s%20s\n" "$fs" "$rios" "$wios"
+done
+
+# Step 6: show meaningful docker container stats
+# First construct a dictionary of container IDs to image names
+container_image_pairs=`echo "$procs_out" | grep -v "^CONTAINER" | tr -s ' ' | cut -d ' ' -f 1,2 | sed 's#matrix-manager.matrix:5000/cloud/##g'`
+readarray container_image_pairs < <(echo "$container_image_pairs")
+for i in "${container_image_pairs[@]}"
+do
+	arr=($i// / })
+	container_id=${arr[0]}
+	image_name=${arr[1]}
+	docker_out=`echo "$docker_out" | sed "s,$container_id,$image_name,g"`
+done
+
+echo ---------------------------------
+echo Containers on $host
+echo --------------------------------
+echo  
+echo "$docker_out"

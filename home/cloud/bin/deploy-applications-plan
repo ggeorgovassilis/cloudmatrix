@@ -1,6 +1,11 @@
 #!/bin/bash
 # Configuration
-plan=/home/cloud/applications.plan
+plan="$1"
+
+if [ ! -f "$plan" ]; then
+	echo $plan does not exist
+	exit 1
+fi
 
 # Clean up nodes
 echo === Terminating containers on all nodes ===

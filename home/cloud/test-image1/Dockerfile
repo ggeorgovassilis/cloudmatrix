@@ -9,6 +9,8 @@ RUN mv /tmp/simplewebapp1.war /usr/local/tomcat/webapps
 
 EXPOSE 8080
 
+ENV CATALINA_OPTS -Djava.security.egd=file:/dev/urandom
+
 ENTRYPOINT [ "/usr/local/tomcat/bin/catalina.sh" , "run"]
-CMD [ "-D", "FOREGROUND" "-Djava.security.egd=file:/dev/urandom"]
+CMD [ "-D", "FOREGROUND"]
 

@@ -1,0 +1,18 @@
+#!/bin/sh
+host=$1
+
+print_usage (){
+	echo list-container-ids nodeid
+}
+
+	
+if [ -z "$host" ];
+	then
+	echo Missing node ID
+	print_usage
+	exit 1
+fi
+
+ssh -T cloud@$host '/bin/bash' <<'ENDSSH'
+docker ps | cut -d ' ' -f 1 | grep -v '^CONTAINER'
+ENDSSH

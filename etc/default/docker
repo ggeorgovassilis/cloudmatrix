@@ -11,3 +11,4 @@ DOCKER_OPTS="-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock --insecure-reg
 
 # This is also a handy place to tweak where Docker's temporary files go.
 #export TMPDIR="/mnt/bigdrive/docker-tmp"
+DOCKER_OPTS="$DOCKER_OPTS --mtu=1450 --bip=10.1.85.1/24"
