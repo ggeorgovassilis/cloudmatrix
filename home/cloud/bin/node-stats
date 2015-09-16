@@ -13,6 +13,10 @@ if [ -z "$host" ];
 	exit 1
 fi
 
+echo ----------------------------------------
+echo Stats for $host
+echo ----------------------------------------
+
 # Step 1: get container IDs running on the node. This is necessary because step 2 needs those ids for docker stats.
 
 readarray containerids < <(list-container-ids $host)
@@ -29,26 +33,22 @@ disk_out=`echo "$out" | sed -n "/---DISKSTATS/,/---EOF/p" | head -n-1 | tail -n+
 
 # Step 4: show meaningful memory stats
 
-echo ---------------------------------
-echo Memory on $host 
-echo ---------------------------------
+echo MEMORY
 echo "$mem_out"
 echo 
 
 # Step 5: show meaningful disk stats 
-echo ---------------------------------
-echo Filesystem on $host 
-echo ---------------------------------
+echo FILESYSTEM 
 
 readarray fslines < <(echo "$disk_out" | grep sd)
-printf "%20s%20s%20s\n" "Filesystem" "read IOs" "write IOs"
+printf "%10s%20s%20s\n" "Filesystem" "read IOs" "write IOs"
 for fsline in "${fslines[@]}"
 do
 	fields=($fsline// / })
 	fs=${fields[2]}
 	rios=${fields[3]}
 	wios=${fields[4]}
-	printf "%20s%20s%20s\n" "$fs" "$rios" "$wios"
+	printf "%10s%20s%20s\n" "$fs" "$rios" "$wios"
 done
 
 # Step 6: show meaningful docker container stats
@@ -63,8 +63,4 @@ do
 	docker_out=`echo "$docker_out" | sed "s,$container_id,$image_name,g"`
 done
 
-echo ---------------------------------
-echo Containers on $host
-echo --------------------------------
-echo  
 echo "$docker_out"
